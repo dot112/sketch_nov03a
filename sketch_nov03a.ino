@@ -185,40 +185,40 @@ std::vector<xbutton> buttons;
 std::vector<toggleButton> toggleButtons;
 
 
-void drawLock(int x1 = 50, int y1 = 50, uint16_t color2 = BLACK) {
-  // lock body (10x8 rectangle)
-  gfx->fillRect(x1 + 1, y1 + 4, 10, 8, color2);
+void drawLock(Arduino_GFX *gfx, int x, int y, uint16_t color) {
+  // Body of the lock (square part)
+  gfx->fillRoundRect(x + 10, y + 20, 30, 25, 5, color);
+  gfx->drawRoundRect(x + 10, y + 20, 30, 25, 5, BLACK);
 
-  // lock shackle (U shape)
-  gfx->drawPixel(x1 + 3, y1 + 3, color2);
-  gfx->drawPixel(x1 + 4, y1 + 2, color2);
-  gfx->drawPixel(x1 + 5, y1 + 2, color2);
-  gfx->drawPixel(x1+ 6, y1 + 2, color2);
-  gfx->drawPixel(x1 + 7, y1 + 3, color2);
+  // Shackle (the top U shape)
+  gfx->drawArc(x + 25, y + 20, 9, 8, 180, 360, color);
 
-  gfx->drawPixel(x1 + 2, y1 + 4, color2); // left shackle vertical
-  gfx->drawPixel(x1 + 9, y1 + 4, color2); // right shackle vertical
-
-  // optional keyhole
-  gfx->drawPixel(x1 + 5, y1 + 7, BLACK);
-  gfx->drawPixel(x1 + 5, y1 + 8, BLACK);
+  // Optional: small keyhole
+  gfx->fillCircle(x + 25, y + 32, 3, BLACK);
+  gfx->fillRect(x + 24, y + 35, 2, 5, BLACK);
 }
 
-void drawPowerButton(int x, int y, uint16_t color) {
-  int radius = 25; // half of 50x50
-  int centerX = x + radius;
-  int centerY = y + radius;
+void drawPowerSymbol(Arduino_GFX *gfx, int x, int y, uint16_t color)
+{
+  int radius = 12;      // outer radius
+  int thickness = 4;    // ring thickness
+  int radius1 = 11;      
+  int thickness1 = 2;
+  int radius2 = 10;      
+  int thickness2 = 1;
+  
 
-  // Draw the outer circle (power ring)
-  gfx->drawCircle(centerX, centerY, radius, color);
+  // Draw the circular arc (open at the top)
+  // Arc angles are in degrees: start = 40°, end = 320° leaves a nice gap at the top.
+  gfx->drawArc(x, y, radius, radius - thickness, 310, 590, color);
+  gfx->drawArc(x, y, radius1, radius1 - thickness1, 310, 590, color);
+  gfx->drawArc(x, y, radius2, radius2 - thickness2, 310, 590, color);
 
-  // Draw a slightly smaller filled circle to make it look like a ring
-  gfx->fillCircle(centerX, centerY, radius - 5, BLACK);
-
-  // Draw the vertical line in the top center (the “power line”)
-  gfx->drawFastVLine(centerX, centerY - radius + 5, 15, color);
+  // Draw the vertical line in the center (the “|” part)
+  int line_length = 12;
+  int line_width = 4;
+  gfx->fillRect(x - line_width / 2, y - radius, line_width, line_length, color);
 }
-
 
 
 void setup() 
@@ -300,9 +300,9 @@ void loop()
   gfx->print("Temp: 35C");
   gfx->setCursor(120, 20);
   gfx->print("Pref:Volt");
-  gfx->setCursor(425, 20);
+  gfx->setCursor(427, 20);
   gfx->setFont();
-  gfx->print("V1.0.0");
+  gfx->print("CV");
   gfx->setFont(&din1451alt_G15pt7b);
  
 
@@ -348,7 +348,7 @@ void loop()
   gfx->setCursor(300, 80);
   gfx->print("OVP:         33.000 V");
   gfx->setCursor(300, 110);
-  gfx->print("OCP:        11.000 A");
+  gfx->print("OCP:         11.000 A");
   gfx->setCursor(300, 140);
   gfx->print("On  Delay:  0.000 s");
   gfx->setCursor(300, 170);
@@ -397,9 +397,14 @@ void loop()
         }
     }
  }
- 
-   gfx->flush();
+
+
+  drawPowerSymbol(gfx, 437, 252, bg);
+
+
+  
+  
   ledcWrite(GFX_BL, 255);
-     drawLock(100, 100, gfx->color565(255, 255, 0));
+  gfx->flush();
   gfx->fillScreen(BLACK); 
 }
